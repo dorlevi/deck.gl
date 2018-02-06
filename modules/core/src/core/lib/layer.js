@@ -18,6 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+/* global fetch */
 /* global window */
 import {COORDINATE_SYSTEM} from './constants';
 import AttributeManager from './attribute-manager';
@@ -41,6 +42,8 @@ const defaultProps = {
   // data: Special handling for null, see below
   data: {type: 'data', value: EMPTY_ARRAY, async: true},
   dataComparator: null,
+  dataTransform: data => data,
+  fetch: url => fetch(url).then(response => response.json()),
   updateTriggers: {}, // Update triggers: a core change detection mechanism in deck.gl
   numInstances: undefined,
 
@@ -68,7 +71,7 @@ const defaultProps = {
   // Selection/Highlighting
   highlightedObjectIndex: null,
   autoHighlight: false,
-  highlightColor: [0, 0, 128, 128]
+  highlightColor: {type: 'color', value: [0, 0, 128, 128]}
 };
 
 let counter = 0;
@@ -619,6 +622,10 @@ export default class Layer {
     changeFlags.propsOrDataChanged = changeFlags.propsOrDataChanged || propsOrDataChanged;
     changeFlags.somethingChanged =
       changeFlags.somethingChanged || propsOrDataChanged || flags.viewportChanged;
+
+    if (propsOrDataChanged) {
+      this.context.layerManager.setNeedsUpdate(String(this));
+    }
   }
   /* eslint-enable complexity */
 
@@ -732,6 +739,9 @@ ${flags.viewportChanged ? 'viewport' : ''}\
     this.state = {};
     // TODO deprecated, for backwards compatibility with older layers
     this.state.attributeManager = this.getAttributeManager();
+
+    // Ensure any async props are updated
+    this.internalState.updateAsyncProps(this.props);
   }
 
   // Called by layer manager to transfer state from an old layer
@@ -752,6 +762,9 @@ ${flags.viewportChanged ? 'viewport' : ''}\
     this.internalState = internalState;
     // Note: We keep the state ref on old layers to support async actions
     // oldLayer.state = null;
+
+    // Ensure any async props are updated
+    this.internalState.updateAsyncProps(this.props);
 
     // Update model layer reference
     for (const model of this.getModels()) {

@@ -13,6 +13,7 @@ export function createProps() {
   const newProps = Object.create(defaultProps, {
     // Props need a back pointer to the owning layer
     _layer: {
+      // Back pointer to the owning layer
       enumerable: false,
       value: layer
     },
@@ -122,13 +123,13 @@ function buildDefaultPropsObject(props, parentProps, propTypes, layerClass) {
   const id = getLayerName(layerClass);
   delete props.id;
 
-  // Add getters/setters for async prop properties
   Object.defineProperties(defaultProps, {
+    // `id` is treated specially because layer might need to override it
     id: {
       configurable: false,
       writable: true,
       value: id
-    }
+    },
   });
 
   // Add getters/setters for async prop properties
@@ -147,7 +148,7 @@ function addAsyncPropDescriptors(defaultProps, propTypes) {
       enumerable: false,
       value: defaultValues
     },
-    // TODO - Shadowed object, just to allow indexing
+    // Shadowed object, just to make sure "early indexing" does not to fail
     _asyncPropUrls: {
       enumerable: false,
       value: {}
@@ -189,12 +190,12 @@ function getDescriptorForAsyncProp(name) {
           // TODO - data expects null to be replaced with `[]`
           return value ? value : this._asyncPropDefaultValues[name];
         }
-        // It's an async prop value: look into layer state
-        // TODO - will be uncommented in next PR
-        // const state = this._layer && this._layer.internalState;
-        // if (state && state.hasAsyncProp(name)) {
-        //   return state.getAsyncProp(name);
-        // }
+        // It's an async prop value: look into layer state for the loaded value
+        // it might have been loaded by a previous layer
+        const state = this._layer && this._layer.internalState;
+        if (state && state.hasAsyncProp(name)) {
+          return state.getAsyncProp(name);
+        }
       }
       // layer not yet initialized/matched, return the layer's default value for the prop
       return this._asyncPropDefaultValues[name];
