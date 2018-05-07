@@ -71,7 +71,7 @@ const defaultProps = {
   // Selection/Highlighting
   highlightedObjectIndex: null,
   autoHighlight: false,
-  highlightColor: {type: 'color', value: [0, 0, 128, 128]}
+  highlightColor: [0, 0, 128, 128]
 };
 
 let counter = 0;
