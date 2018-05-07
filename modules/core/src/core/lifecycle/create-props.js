@@ -148,7 +148,7 @@ function addAsyncPropDescriptors(defaultProps, propTypes) {
       enumerable: false,
       value: defaultValues
     },
-    // Shadowed object, just to make sure "early indexing" does not to fail
+    // Shadowed object, just to make sure "early indexing" does not fail
     _asyncPropUrls: {
       enumerable: false,
       value: {}

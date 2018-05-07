@@ -622,10 +622,6 @@ export default class Layer {
     changeFlags.propsOrDataChanged = changeFlags.propsOrDataChanged || propsOrDataChanged;
     changeFlags.somethingChanged =
       changeFlags.somethingChanged || propsOrDataChanged || flags.viewportChanged;
-
-    if (propsOrDataChanged) {
-      this.context.layerManager.setNeedsUpdate(String(this));
-    }
   }
   /* eslint-enable complexity */
 
